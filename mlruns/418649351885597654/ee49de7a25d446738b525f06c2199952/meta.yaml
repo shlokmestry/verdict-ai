@@ -1,0 +1,15 @@
+artifact_uri: /Users/shlok/My Drive/explainmydecision/mlruns/418649351885597654/ee49de7a25d446738b525f06c2199952/artifacts
+end_time: 1773529437910
+entry_point_name: ''
+experiment_id: '418649351885597654'
+lifecycle_stage: active
+run_id: ee49de7a25d446738b525f06c2199952
+run_name: xgboost
+run_uuid: ee49de7a25d446738b525f06c2199952
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1773529436858
+status: 3
+tags: []
+user_id: shlok
