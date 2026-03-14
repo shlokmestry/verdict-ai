@@ -1,0 +1,15 @@
+artifact_uri: /Users/shlok/My Drive/explainmydecision/mlruns/418649351885597654/a3429a8de24545518c3e00cae8463dbf/artifacts
+end_time: 1773529436857
+entry_point_name: ''
+experiment_id: '418649351885597654'
+lifecycle_stage: active
+run_id: a3429a8de24545518c3e00cae8463dbf
+run_name: gradient_boosting
+run_uuid: a3429a8de24545518c3e00cae8463dbf
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1773529393562
+status: 3
+tags: []
+user_id: shlok

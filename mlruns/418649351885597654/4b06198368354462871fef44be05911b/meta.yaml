@@ -1,0 +1,15 @@
+artifact_uri: /Users/shlok/My Drive/explainmydecision/mlruns/418649351885597654/4b06198368354462871fef44be05911b/artifacts
+end_time: 1773529440415
+entry_point_name: ''
+experiment_id: '418649351885597654'
+lifecycle_stage: active
+run_id: 4b06198368354462871fef44be05911b
+run_name: lightgbm
+run_uuid: 4b06198368354462871fef44be05911b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1773529437911
+status: 3
+tags: []
+user_id: shlok

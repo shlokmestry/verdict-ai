@@ -1,0 +1,62 @@
+[
+  {
+    "feature": "grade_numeric",
+    "importance": 0.1255
+  },
+  {
+    "feature": "dti",
+    "importance": 0.0705
+  },
+  {
+    "feature": "fico_range_low",
+    "importance": 0.0327
+  },
+  {
+    "feature": "fico_score",
+    "importance": 0.0326
+  },
+  {
+    "feature": "purpose_other",
+    "importance": 0.0049
+  },
+  {
+    "feature": "open_acc",
+    "importance": 0.0038
+  },
+  {
+    "feature": "addr_state_TX",
+    "importance": 0.0035
+  },
+  {
+    "feature": "home_ownership_RENT",
+    "importance": 0.003
+  },
+  {
+    "feature": "addr_state_OH",
+    "importance": 0.0027
+  },
+  {
+    "feature": "int_rate",
+    "importance": 0.0026
+  },
+  {
+    "feature": "total_acc",
+    "importance": 0.0025
+  },
+  {
+    "feature": "purpose_small_business",
+    "importance": 0.0025
+  },
+  {
+    "feature": "addr_state_MI",
+    "importance": 0.0025
+  },
+  {
+    "feature": "addr_state_NY",
+    "importance": 0.0025
+  },
+  {
+    "feature": "emp_length",
+    "importance": 0.0022
+  }
+]
