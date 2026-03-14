@@ -1,0 +1,76 @@
+import pytest
+import pandas as pd
+import numpy as np
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from data.preprocessing import LoanDataPreprocessor
+
+
+@pytest.fixture
+def sample_df():
+    np.random.seed(0)
+    n = 300
+    return pd.DataFrame({
+        "loan_amnt":      np.random.choice([5000, 10000, 20000], n),
+        "term":           np.random.choice([" 36 months", " 60 months"], n),
+        "int_rate":       np.random.uniform(5, 28, n),
+        "installment":    np.random.uniform(100, 1000, n),
+        "grade":          np.random.choice(["A", "B", "C", "D"], n),
+        "emp_length":     np.random.choice(["1 year", "5 years", "10+ years"], n),
+        "home_ownership": np.random.choice(["RENT", "OWN", "MORTGAGE"], n),
+        "annual_inc":     np.random.uniform(30000, 150000, n),
+        "verification_status": np.random.choice(["Verified", "Not Verified"], n),
+        "purpose":        np.random.choice(["debt_consolidation", "credit_card"], n),
+        "dti":            np.random.uniform(0, 35, n),
+        "delinq_2yrs":    np.random.choice([0, 1, 2], n),
+        "fico_range_low": np.random.choice(range(600, 800, 5), n),
+        "open_acc":       np.random.randint(1, 20, n),
+        "pub_rec":        np.random.choice([0, 1], n),
+        "revol_bal":      np.random.uniform(0, 50000, n),
+        "revol_util":     np.random.uniform(0, 100, n),
+        "total_acc":      np.random.randint(2, 40, n),
+        "mort_acc":       np.random.randint(0, 5, n),
+        "pub_rec_bankruptcies": np.random.choice([0, 1], n),
+        "addr_state":     np.random.choice(["CA", "TX", "NY"], n),
+        "loan_status":    np.random.choice([0, 1], n),
+    })
+
+
+class TestLoanDataPreprocessor:
+
+    def test_clean_data_parses_term(self, sample_df):
+        p       = LoanDataPreprocessor()
+        cleaned = p.clean_data(sample_df)
+        assert cleaned["term"].dtype in ["float64", "int64"]
+        assert cleaned["term"].isin([36.0, 60.0]).all()
+
+    def test_engineer_features_creates_expected_columns(self, sample_df):
+        p          = LoanDataPreprocessor()
+        cleaned    = p.clean_data(sample_df)
+        engineered = p.engineer_features(cleaned)
+        for col in ["loan_to_income", "installment_to_income",
+                    "derogatory_marks", "fico_score", "grade_numeric"]:
+            assert col in engineered.columns
+
+    def test_split_proportions(self, sample_df):
+        p        = LoanDataPreprocessor()
+        cleaned  = p.clean_data(sample_df)
+        eng      = p.engineer_features(cleaned)
+        encoded  = p.encode_categoricals(eng, fit=True)
+        train, val, test = p.split_data(encoded)
+        total    = len(train) + len(val) + len(test)
+        assert abs(len(train) / total - 0.80) < 0.05
+        assert abs(len(val)   / total - 0.10) < 0.05
+        assert abs(len(test)  / total - 0.10) < 0.05
+
+    def test_no_target_leak_in_features(self, sample_df):
+        p       = LoanDataPreprocessor()
+        cleaned = p.clean_data(sample_df)
+        eng     = p.engineer_features(cleaned)
+        encoded = p.encode_categoricals(eng, fit=True)
+        train, _, _ = p.split_data(encoded)
+        X       = train.drop(columns=["loan_status"])
+        X_scaled = p.scale_features(X, fit=True)
+        assert "loan_status" not in X_scaled.columns
