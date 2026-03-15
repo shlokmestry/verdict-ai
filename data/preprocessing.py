@@ -198,6 +198,12 @@ class LoanDataPreprocessor:
         df = self.engineer_features(df)
         df = self.encode_categoricals(df, fit=False)
         X  = df.drop(columns=["loan_status"], errors="ignore")
+        # Align to training columns before scaling
+        if self.feature_columns:
+            for col in self.feature_columns:
+                if col not in X.columns:
+                    X[col] = 0
+            X = X[self.feature_columns]
         X  = self.scale_features(X, fit=False)
         return X
 
