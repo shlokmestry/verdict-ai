@@ -37,7 +37,10 @@ def get_explainer():
 
 def build_inference_df(payload: LoanApplicationRequest) -> pd.DataFrame:
     emp_str = "< 1 year" if payload.emp_length == 0 else f"{payload.emp_length} years"
-    return pd.DataFrame([{
+    # Use median values for fields not collected in the application form
+    # addr_state defaults to CA (most common in training data)
+    # grade defaults to C (middle grade)
+    raw = pd.DataFrame([{
         "loan_amnt": payload.loan_amnt, "term": f" {payload.term} months",
         "int_rate": 15.0, "installment": payload.loan_amnt / payload.term,
         "grade": "C", "emp_length": emp_str,
@@ -47,6 +50,7 @@ def build_inference_df(payload: LoanApplicationRequest) -> pd.DataFrame:
         "open_acc": 8, "pub_rec": 0, "revol_bal": 5000.0, "revol_util": 30.0,
         "total_acc": 15, "mort_acc": 0, "pub_rec_bankruptcies": 0, "addr_state": "CA",
     }])
+    return raw.fillna(0)
 
 @router.post("/predict", response_model=LoanDecisionResponse)
 async def predict_loan(
@@ -138,9 +142,20 @@ async def run_llm_pipeline(application_id: int, decision: str, top_factors: list
             return
         factor_names = ", ".join(f["feature"] for f in top_factors[:3])
         app.explanation_email  = f"Dear Customer,\n\nYour loan application has been {decision}.\n\nKey factors: {factor_names}.\n\nBest regards,\nExplainMyDecision Team"
+        from recommender.engine import get_next_best_offers
+        offers = get_next_best_offers(
+            profile  = {
+                "loan_amnt":      app.loan_amnt,
+                "dti":            app.dti,
+                "fico_range_low": app.fico_range_low,
+                "purpose":        app.purpose,
+                "annual_inc":     app.annual_inc,
+            },
+            decision = decision,
+        )
         app.guardrail_passed   = True
         app.escalated_to_human = False
-        app.next_best_offers   = []
+        app.next_best_offers   = offers
         app.status             = "complete"
         app.processed_at       = datetime.now(timezone.utc)
         db.commit()
