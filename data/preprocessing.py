@@ -138,12 +138,15 @@ class LoanDataPreprocessor:
     # ------------------------------------------------------------------
     def scale_features(self, X: pd.DataFrame, fit: bool = True) -> pd.DataFrame:
         numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+        # Fill any NaN before scaling
+        X[numeric_cols] = X[numeric_cols].fillna(0)
 
         if fit:
             X[numeric_cols]      = self.scaler.fit_transform(X[numeric_cols])
             self.feature_columns = X.columns.tolist()
         else:
             X = X.reindex(columns=self.feature_columns, fill_value=0)
+            X[numeric_cols] = X[numeric_cols].fillna(0)
             X[numeric_cols] = self.scaler.transform(X[numeric_cols])
 
         return X
