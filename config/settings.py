@@ -6,8 +6,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 class Settings(BaseSettings):
     openai_api_key:      str = ""
     database_url:        str = "sqlite:///./explainmydecision.db"
-    model_path:          str = str(BASE_DIR / "models/trained/best_model.joblib")
-    mlflow_tracking_uri: str = str(BASE_DIR / "mlruns")
+    model_path:          str = "models/trained/best_model.joblib"
+    mlflow_tracking_uri: str = "mlruns"
     log_level:           str = "INFO"
     clerk_frontend_api:  str = ""
     clerk_secret_key:    str = ""
