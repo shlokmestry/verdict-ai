@@ -1,126 +1,87 @@
 import { Link } from 'react-router-dom'
-
-const features = [
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M3 10L7 14L17 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-    title: 'Instant decision',
-    desc: 'ML model trained on thousands of loan records gives you an answer in seconds.',
-    color: 'text-emerald-600 bg-emerald-50',
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="2"/>
-        <path d="M10 7v3l2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-      </svg>
-    ),
-    title: 'Full transparency',
-    desc: 'SHAP explainability shows exactly which factors drove your approval or denial.',
-    color: 'text-blue-600 bg-blue-50',
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 2L12.5 7.5H18L13.5 11L15.5 17L10 13.5L4.5 17L6.5 11L2 7.5H7.5L10 2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-      </svg>
-    ),
-    title: 'Bias-checked',
-    desc: 'Every AI-generated response passes through a guardrail agent before you see it.',
-    color: 'text-violet-600 bg-violet-50',
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M4 14l4-4 3 3 5-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <circle cx="16" cy="6" r="2" fill="currentColor"/>
-      </svg>
-    ),
-    title: 'Smart alternatives',
-    desc: 'Denied? Our recommender finds the right financial product for your situation.',
-    color: 'text-amber-600 bg-amber-50',
-  },
-]
+import { motion } from 'framer-motion'
+import { Zap, Eye, ShieldCheck, Lightbulb, ArrowRight } from 'lucide-react'
 
 const steps = [
-  { n: '01', title: 'Fill the form',   desc: 'Income, credit score, loan amount — takes 60 seconds.' },
-  { n: '02', title: 'ML model runs',   desc: 'Gradient boosting model scores your application instantly.' },
-  { n: '03', title: 'Get your answer', desc: 'Full decision + SHAP factors + plain-English letter.' },
+  { n: '01', title: 'Fill the form',   desc: 'Provide your financial profile in under 2 minutes.' },
+  { n: '02', title: 'ML model runs',   desc: 'Our bias-checked model analyzes 40+ factors instantly.' },
+  { n: '03', title: 'Get your answer', desc: 'Instant decision with a full impact report.' },
 ]
+
+const features = [
+  { Icon: Zap,         title: 'Instant decision',    desc: 'Get approved or denied in seconds, not days. Our ML pipeline runs in real-time.',                         color: 'text-brand-500' },
+  { Icon: Eye,         title: 'Full transparency',   desc: 'SHAP-powered factor analysis shows exactly why the model made its decision.',                              color: 'text-success'   },
+  { Icon: ShieldCheck, title: 'Bias-checked',        desc: 'Every model is audited for demographic parity and equal opportunity metrics.',                             color: 'text-warning'   },
+  { Icon: Lightbulb,   title: 'Smart alternatives',  desc: 'If denied, receive personalised next-best-offer recommendations.',                                         color: 'text-destructive'},
+]
+
+const ease = [0.16, 1, 0.3, 1]
 
 export default function Home() {
   return (
-    <div className="max-w-5xl mx-auto px-6">
+    <div className="max-w-6xl mx-auto px-6 py-20">
 
-      {/* ── Hero ── */}
-      <section className="py-24 text-center">
-        <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-8 tracking-wide uppercase">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-500 inline-block" />
-          AI-powered · Explainable · Fair
-        </div>
+      {/* Hero */}
+      <section className="text-center mb-32">
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease }}
+          className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">
+          Loan decisions you can <br />
+          <span className="text-gray-400 italic">actually</span> understand.
+        </motion.h1>
 
-        <h1 className="text-5xl sm:text-6xl font-bold text-slate-900 mb-6 leading-[1.1] tracking-tight">
-          Loan decisions you can<br />
-          <span className="text-brand-600">actually understand</span>
-        </h1>
+        <motion.p
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease }}
+          className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
+          ExplainMyDecision uses interpretable ML to provide instant credit approvals with full factor transparency. No black boxes.
+        </motion.p>
 
-        <p className="text-lg text-slate-500 mb-10 max-w-xl mx-auto leading-relaxed">
-          Instant AI-powered decisions with plain-English explanations of every factor that matters.
-        </p>
-
-        <div className="flex items-center justify-center gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease }}
+          className="flex gap-4 justify-center">
           <Link to="/apply"
-            className="bg-brand-600 text-white px-7 py-3.5 rounded-xl text-base font-semibold hover:bg-brand-700 transition-colors shadow-md shadow-brand-100">
-            Apply now — it's free
+            className="px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors active:scale-[0.98]">
+            Apply now
           </Link>
           <Link to="/history"
-            className="bg-white border border-slate-200 text-slate-700 px-7 py-3.5 rounded-xl text-base font-medium hover:bg-slate-50 transition-colors">
+            className="px-6 py-3 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors active:scale-[0.98]">
             View history
           </Link>
-        </div>
+        </motion.div>
       </section>
 
-      {/* ── How it works ── */}
-      <section className="mb-20">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-slate-900">How it works</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {steps.map((s, i) => (
-            <div key={s.n} className="relative bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-              {i < steps.length - 1 && (
-                <div className="hidden sm:block absolute top-8 -right-2 z-10 text-slate-300 text-lg">→</div>
-              )}
-              <div className="text-3xl font-black text-slate-100 mb-3 leading-none">{s.n}</div>
-              <h3 className="font-semibold text-slate-900 mb-1">{s.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{s.desc}</p>
-            </div>
-          ))}
-        </div>
+      {/* Steps */}
+      <section className="grid md:grid-cols-3 gap-12 mb-32">
+        {steps.map((s, i) => (
+          <motion.div key={i}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5, ease }}
+            className="relative">
+            <div className="font-mono text-sm text-brand-500 mb-4">{s.n}</div>
+            <h3 className="text-xl font-bold mb-2 text-gray-900">{s.title}</h3>
+            <p className="text-gray-500">{s.desc}</p>
+            {i < 2 && (
+              <ArrowRight className="hidden md:block absolute -right-6 top-10 text-gray-200" size={20} />
+            )}
+          </motion.div>
+        ))}
       </section>
 
-      {/* ── Features ── */}
-      <section className="mb-24">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-slate-900">Why explainmydecision</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {features.map((f) => (
-            <div key={f.title}
-              className="bg-white rounded-2xl border border-slate-100 p-7 shadow-sm hover:shadow-md transition-shadow flex gap-5">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${f.color}`}>
-                {f.icon}
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-1.5">{f.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Features */}
+      <section className="grid md:grid-cols-2 gap-6 mb-20">
+        {features.map(({ Icon, title, desc, color }, i) => (
+          <motion.div key={i}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ delay: i * 0.05, duration: 0.5, ease }}
+            className="p-8 border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <Icon className={`${color} mb-4`} size={28} />
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+            <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+          </motion.div>
+        ))}
       </section>
 
     </div>
