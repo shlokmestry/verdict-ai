@@ -4,6 +4,8 @@ import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8007'
 
+const EUR_TO_USD = 1.08
+
 const purposes = [
   { value: 'debt_consolidation', label: 'Debt Consolidation' },
   { value: 'credit_card',        label: 'Credit Card'        },
@@ -42,8 +44,29 @@ const loadingMessages = [
 
 const STEPS = ['Loan Details', 'Financial Profile', 'Submit']
 
+function CurrencyToggle({ currency, onChange }) {
+  return (
+    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      {['USD', 'EUR'].map(c => (
+        <button
+          key={c}
+          type="button"
+          onClick={() => onChange(c)}
+          className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+            currency === c
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          {c === 'USD' ? '$ USD' : '€ EUR'}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function ProgressBar({ step }) {
-  const pct = ((step) / (STEPS.length - 1)) * 100
+  const pct = (step / (STEPS.length - 1)) * 100
   return (
     <div className="mb-10">
       <div className="flex justify-between mb-2">
@@ -63,15 +86,17 @@ function ProgressBar({ step }) {
   )
 }
 
-function LoanSummary({ form }) {
-  const amount    = Number(form.loan_amnt)
-  const term      = Number(form.term)
-  const income    = Number(form.annual_inc)
-  const hasAmount = amount >= 1000
-  const hasTerm   = term > 0
+function LoanSummary({ form, currency, symbol, toUSD }) {
+  const rawAmount  = Number(form.loan_amnt)
+  const usdAmount  = toUSD(rawAmount)
+  const term       = Number(form.term)
+  const income     = Number(form.annual_inc)
+  const usdIncome  = toUSD(income)
+  const hasAmount  = rawAmount >= 1000
+  const hasTerm    = term > 0
 
   const monthlyPayment = hasAmount && hasTerm
-    ? (amount / term).toFixed(0)
+    ? (rawAmount / term).toFixed(0)
     : null
 
   const affordability = monthlyPayment && income > 0
@@ -79,7 +104,6 @@ function LoanSummary({ form }) {
     : null
 
   const purposeLabel = purposes.find(p => p.value === form.purpose)?.label
-
   const empty = !hasAmount && !hasTerm && !form.purpose
 
   return (
@@ -94,8 +118,11 @@ function LoanSummary({ form }) {
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Loan amount</p>
               <p className="text-2xl font-bold text-gray-900 tabular-nums">
-                ${amount.toLocaleString()}
+                {symbol}{rawAmount.toLocaleString()}
               </p>
+              {currency === 'EUR' && (
+                <p className="text-xs text-gray-300 mt-0.5">≈ ${Math.round(usdAmount).toLocaleString()} USD</p>
+              )}
             </div>
           )}
 
@@ -116,7 +143,10 @@ function LoanSummary({ form }) {
           {monthlyPayment && (
             <div className="pt-3 border-t border-gray-50">
               <p className="text-xs text-gray-400 mb-0.5">Est. monthly payment</p>
-              <p className="text-lg font-bold text-gray-900 tabular-nums">~${Number(monthlyPayment).toLocaleString()}<span className="text-xs font-normal text-gray-400">/mo</span></p>
+              <p className="text-lg font-bold text-gray-900 tabular-nums">
+                ~{symbol}{Number(monthlyPayment).toLocaleString()}
+                <span className="text-xs font-normal text-gray-400">/mo</span>
+              </p>
               <p className="text-xs text-gray-300 mt-0.5">principal only, excl. interest</p>
             </div>
           )}
@@ -240,7 +270,7 @@ function SectionHeader({ label }) {
 }
 
 function getStep(form) {
-  const loanDone = form.loan_amnt && form.term && form.purpose
+  const loanDone    = form.loan_amnt && form.term && form.purpose
   const financeDone = form.annual_inc && form.dti && form.fico_range_low && form.emp_length && form.home_ownership
   if (financeDone && loanDone) return 2
   if (loanDone) return 1
@@ -248,9 +278,10 @@ function getStep(form) {
 }
 
 export default function Apply() {
-  const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState(null)
+  const navigate               = useNavigate()
+  const [loading, setLoading]  = useState(false)
+  const [error, setError]      = useState(null)
+  const [currency, setCurrency] = useState('USD')
   const [form, setForm] = useState({
     loan_amnt:      '',
     term:           '',
@@ -262,9 +293,37 @@ export default function Apply() {
     emp_length:     '',
   })
 
+  const isEUR  = currency === 'EUR'
+  const symbol = isEUR ? '€' : '$'
+  const toUSD  = (val) => isEUR ? val * EUR_TO_USD : val
+
+  const maxLoan     = isEUR ? Math.round(40000 / EUR_TO_USD) : 40000
+  const minLoan     = isEUR ? Math.round(1000  / EUR_TO_USD) : 1000
+  const loanHint    = isEUR
+    ? `Between €${minLoan.toLocaleString()} and €${maxLoan.toLocaleString()} (≈ $1,000–$40,000)`
+    : 'Between $1,000 and $40,000'
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleCurrencyChange = (c) => {
+    setCurrency(c)
+    setForm(prev => {
+      const convert = (val, from, to) => {
+        if (!val) return ''
+        const n = Number(val)
+        if (from === 'USD' && to === 'EUR') return Math.round(n / EUR_TO_USD).toString()
+        if (from === 'EUR' && to === 'USD') return Math.round(n * EUR_TO_USD).toString()
+        return val
+      }
+      return {
+        ...prev,
+        loan_amnt:  convert(prev.loan_amnt,  currency, c),
+        annual_inc: convert(prev.annual_inc, currency, c),
+      }
+    })
   }
 
   const handleSubmit = async (e) => {
@@ -273,10 +332,10 @@ export default function Apply() {
     setError(null)
     try {
       const payload = {
-        loan_amnt:      Number(form.loan_amnt),
+        loan_amnt:      Math.round(toUSD(Number(form.loan_amnt))),
         term:           Number(form.term),
         purpose:        form.purpose,
-        annual_inc:     Number(form.annual_inc),
+        annual_inc:     Math.round(toUSD(Number(form.annual_inc))),
         dti:            Number(form.dti),
         fico_range_low: Number(form.fico_range_low),
         home_ownership: form.home_ownership,
@@ -298,10 +357,17 @@ export default function Apply() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Loan Application</h1>
-      <p className="text-gray-500 mb-8 text-sm">Fill in your details and get an instant AI-powered decision.</p>
+      <div className="flex items-start justify-between mb-2">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Loan Application</h1>
+          <p className="text-gray-500 mt-2 text-sm">Fill in your details and get an instant AI-powered decision.</p>
+        </div>
+        <CurrencyToggle currency={currency} onChange={handleCurrencyChange} />
+      </div>
 
-      <ProgressBar step={step} />
+      <div className="mt-8">
+        <ProgressBar step={step} />
+      </div>
 
       <div className="flex gap-10">
         {/* Form */}
@@ -310,12 +376,13 @@ export default function Apply() {
           <section>
             <SectionHeader label="Loan Details" />
             <div className="grid gap-6">
-              <Field label="Loan Amount" hint="Between $1,000 and $40,000">
+              <Field label="Loan Amount" hint={loanHint}>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{symbol}</span>
                   <input type="number" name="loan_amnt" value={form.loan_amnt}
-                    onChange={handleChange} min={1000} max={40000} required
-                    placeholder="e.g. 10,000" className={inputCls + " pl-8"} />
+                    onChange={handleChange} min={minLoan} max={maxLoan} required
+                    placeholder={`e.g. ${isEUR ? '9,000' : '10,000'}`}
+                    className={inputCls + " pl-8"} />
                 </div>
               </Field>
 
@@ -343,10 +410,11 @@ export default function Apply() {
             <div className="grid gap-6">
               <Field label="Annual Income" hint="Before tax">
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{symbol}</span>
                   <input type="number" name="annual_inc" value={form.annual_inc}
                     onChange={handleChange} min={0} required
-                    placeholder="e.g. 60,000" className={inputCls + " pl-8"} />
+                    placeholder={`e.g. ${isEUR ? '55,000' : '60,000'}`}
+                    className={inputCls + " pl-8"} />
                 </div>
               </Field>
 
@@ -395,7 +463,7 @@ export default function Apply() {
 
         {/* Sidebar */}
         <div className="w-56 flex-shrink-0 hidden lg:block">
-          <LoanSummary form={form} />
+          <LoanSummary form={form} currency={currency} symbol={symbol} toUSD={toUSD} />
         </div>
       </div>
     </div>
