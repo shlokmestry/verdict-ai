@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Apply from './pages/Apply'
 import Result from './pages/Result'
 import History from './pages/History'
+import About from './pages/About'
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="apply" element={<Apply />} />
           <Route path="result/:id" element={<Result />} />
           <Route path="history" element={<History />} />
+          <Route path="about" element={<About />} />
         </Route>
       </Routes>
     </BrowserRouter>

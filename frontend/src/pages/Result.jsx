@@ -1,40 +1,144 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, Copy, Check } from 'lucide-react'
 import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8007'
 
+const SHAP_LABELS = {
+  dti:                    'Debt-to-Income Ratio',
+  fico_range_low:         'Credit Score',
+  fico_score:             'Credit Score',
+  annual_inc:             'Annual Income',
+  loan_amnt:              'Loan Amount',
+  loan_to_income:         'Loan-to-Income Ratio',
+  installment_to_income:  'Installment-to-Income',
+  emp_length:             'Employment Length',
+  grade_numeric:          'Loan Grade',
+  open_acc:               'Open Accounts',
+  revol_util:             'Credit Utilisation',
+  derogatory_marks:       'Derogatory Marks',
+  term:                   'Loan Term',
+  pub_rec:                'Public Records',
+  delinq_2yrs:            'Delinquencies (2yr)',
+}
+
+function friendlyLabel(feature) {
+  return SHAP_LABELS[feature] ||
+    feature.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+function ConfidenceArc({ value }) {
+  const [current, setCurrent] = useState(0)
+  const size = 140
+  const r = 54
+  const cx = 70
+  const cy = 70
+  const circumference = Math.PI * r
+  const offset = circumference * (1 - current / 100)
+
+  useEffect(() => {
+    const start = Date.now()
+    const duration = 1200
+    const raf = () => {
+      const t = Math.min((Date.now() - start) / duration, 1)
+      const ease = 1 - Math.pow(1 - t, 3)
+      setCurrent(Math.round(ease * value))
+      if (t < 1) requestAnimationFrame(raf)
+    }
+    requestAnimationFrame(raf)
+  }, [value])
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width={size} height={size * 0.6} viewBox={`0 0 ${size} ${size * 0.6}`}>
+        <path
+          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none" stroke="#e5e7eb" strokeWidth="10" strokeLinecap="round"
+        />
+        <path
+          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none"
+          stroke={value >= 70 ? '#10b981' : value >= 50 ? '#f59e0b' : '#ef4444'}
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 0.05s linear' }}
+        />
+      </svg>
+      <p className="text-3xl font-bold text-gray-900 -mt-2 tabular-nums">{current}%</p>
+      <p className="text-xs text-gray-400 font-mono">confidence</p>
+    </div>
+  )
+}
+
 function FactorBar({ feature, impact, direction }) {
   const pct = Math.min(Math.round(impact * 500), 100)
   const pos = direction === 'positive'
-  const label = feature.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  const label = friendlyLabel(feature)
 
   return (
     <div className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${pos ? 'bg-success' : 'bg-destructive'}`} />
-      <span className="text-xs text-gray-600 w-44 flex-shrink-0 truncate font-medium font-mono">{label}</span>
+      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${pos ? 'bg-emerald-500' : 'bg-red-400'}`} />
+      <span className="text-xs text-gray-600 w-44 flex-shrink-0 truncate font-medium">{label}</span>
       <div className="flex-1 bg-gray-100 rounded-full h-1.5">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className={`h-1.5 rounded-full ${pos ? 'bg-success' : 'bg-destructive'}`}
+          className={`h-1.5 rounded-full ${pos ? 'bg-emerald-500' : 'bg-red-400'}`}
         />
       </div>
-      <span className={`text-xs font-semibold w-14 text-right tabular-nums font-mono ${pos ? 'text-success' : 'text-destructive'}`}>
+      <span className={`text-xs font-semibold w-14 text-right tabular-nums font-mono ${pos ? 'text-emerald-600' : 'text-red-500'}`}>
         {pos ? '+' : '−'}{impact.toFixed(3)}
       </span>
     </div>
   )
 }
 
+function ShareButton() {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(window.location.href)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors px-3 py-1.5 border border-gray-200 rounded-lg"
+    >
+      {copied
+        ? <><Check size={12} className="text-emerald-500" /> Copied!</>
+        : <><Copy size={12} /> Share result</>
+      }
+    </button>
+  )
+}
+
+function fireConfetti() {
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js'
+  script.onload = () => {
+    window.confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ['#10b981', '#6ee7b7', '#111827', '#d1fae5'] })
+    setTimeout(() => {
+      window.confetti({ particleCount: 60, spread: 60, origin: { y: 0.5, x: 0.3 }, colors: ['#10b981', '#6ee7b7'] })
+      window.confetti({ particleCount: 60, spread: 60, origin: { y: 0.5, x: 0.7 }, colors: ['#111827', '#d1fae5'] })
+    }, 300)
+  }
+  document.head.appendChild(script)
+}
+
 export default function Result() {
-  const { id }                = useParams()
-  const [data, setData]       = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [polls, setPolls]     = useState(0)
+  const { id }                  = useParams()
+  const [data, setData]         = useState(null)
+  const [loading, setLoading]   = useState(true)
+  const [polls, setPolls]       = useState(0)
+  const confettiFired           = useRef(false)
 
   useEffect(() => {
     axios.get(`${API}/api/applications/${id}`, {
@@ -55,6 +159,13 @@ export default function Result() {
     }
     if (polls >= 10) setLoading(false)
   }, [polls, loading])
+
+  useEffect(() => {
+    if (data?.decision === 'approved' && !confettiFired.current) {
+      confettiFired.current = true
+      setTimeout(fireConfetti, 400)
+    }
+  }, [data])
 
   if (!data && loading) return (
     <div className="max-w-2xl mx-auto px-6 py-28 text-center">
@@ -81,21 +192,29 @@ export default function Result() {
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className={`rounded-xl p-8 text-center border ${approved ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+
         {approved
-          ? <CheckCircle2 className="text-success mx-auto mb-4" size={48} />
-          : <XCircle className="text-destructive mx-auto mb-4" size={48} />
+          ? <CheckCircle2 className="text-emerald-500 mx-auto mb-4" size={48} />
+          : <XCircle className="text-red-400 mx-auto mb-4" size={48} />
         }
-        <h1 className={`text-3xl font-bold mb-3 ${approved ? 'text-emerald-700' : 'text-red-700'}`}>
+
+        <h1 className={`text-3xl font-bold mb-6 ${approved ? 'text-emerald-700' : 'text-red-700'}`}>
           {approved ? 'Approved' : 'Application Denied'}
         </h1>
-        <div className="flex items-center justify-center gap-3">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium font-mono
-            ${approved ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-            {(data.confidence * 100).toFixed(0)}% confidence
-          </span>
-          <span className="text-gray-400 text-sm font-mono">
-            p = {(data.probability * 100).toFixed(1)}%
-          </span>
+
+        <div className="flex items-center justify-center gap-8">
+          <ConfidenceArc value={Math.round(data.confidence * 100)} />
+          <div className="text-left">
+            <p className="text-xs text-gray-400 mb-1 font-mono">approval probability</p>
+            <p className="text-2xl font-bold text-gray-900 tabular-nums font-mono">
+              {(data.probability * 100).toFixed(1)}%
+            </p>
+            <p className="text-xs text-gray-400 mt-3 font-mono">application #{id}</p>
+          </div>
+        </div>
+
+        <div className="flex justify-center mt-5">
+          <ShareButton />
         </div>
       </motion.div>
 
@@ -118,8 +237,8 @@ export default function Result() {
           </div>
           {data.top_factors.map((f, i) => <FactorBar key={i} {...f} />)}
           <p className="text-xs text-gray-400 mt-4 flex items-center gap-4">
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-success inline-block" />helped</span>
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-destructive inline-block" />hurt</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />helped</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />hurt</span>
           </p>
         </motion.div>
       )}
