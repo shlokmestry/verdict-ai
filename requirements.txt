@@ -1,3 +1,4 @@
+
 # Data & ML
 pandas==2.2.2
 numpy==1.26.4
@@ -7,9 +8,6 @@ lightgbm==4.4.0
 imbalanced-learn==0.12.3
 joblib==1.4.2
 shap==0.45.1
-
-# LLM
-google-generativeai==0.8.3
 
 # API
 fastapi==0.112.0

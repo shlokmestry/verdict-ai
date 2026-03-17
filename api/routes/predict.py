@@ -59,14 +59,11 @@ def generate_email_with_gemini(
     top_factors: list,
 ) -> str:
     try:
-        import google.generativeai as genai
+        import httpx
         from config.settings import settings
 
         if not settings.gemini_api_key:
             raise ValueError("GEMINI_API_KEY not set")
-
-        genai.configure(api_key=settings.gemini_api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
         factor_lines = "\n".join(
             f"- {f['feature'].replace('_', ' ').title()}: "
@@ -102,8 +99,19 @@ Guidelines:
 - Start directly with "Dear Customer,"
 """
 
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"gemini-2.0-flash:generateContent?key={settings.gemini_api_key}"
+        )
+
+        response = httpx.post(
+            url,
+            json={"contents": [{"parts": [{"text": prompt}]}]},
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
     except Exception as e:
         logger.error(f"Gemini email generation failed: {e}")
