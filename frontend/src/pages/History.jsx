@@ -25,7 +25,7 @@ export default function History() {
     axios.get(`${API}/api/applications`, {
       headers: { Authorization: 'Bearer dev-token' },
     })
-      .then(res => setApps(res.data))
+ .then(res => setApps(res.data.filter(app => app.status !== 'error')))
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
