@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -32,6 +32,74 @@ const tooltips = {
   },
 }
 
+const loadingMessages = [
+  { msg: "Crunching your numbers…",       sub: "40+ factors, zero judgment."                                              },
+  { msg: "Consulting the oracle…",        sub: "It's actually a gradient boosting model, but oracle sounds cooler."       },
+  { msg: "Calculating your fate…",        sub: "Don't panic. We've seen worse DTIs."                                      },
+  { msg: "Asking the algorithm nicely…",  sub: "SHAP values incoming."                                                    },
+  { msg: "Almost there…",                 sub: "Good things come to those who wait."                                      },
+]
+
+function LoadingScreen() {
+  const [step, setStep] = useState(0)
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setStep(s => s + 1)
+        setVisible(true)
+      }, 300)
+    }, 2500)
+    return () => clearInterval(t)
+  }, [])
+
+  const { msg, sub } = loadingMessages[step % loadingMessages.length]
+
+  return (
+    <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center gap-6">
+      {/* Spinner */}
+      <div className="relative w-16 h-16">
+        <svg viewBox="0 0 64 64" className="w-16 h-16" style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+          <circle
+            cx="32" cy="32" r="28"
+            fill="none"
+            stroke="#111827"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray="44 132"
+            style={{ animation: 'spin 1.2s linear infinite' }}
+          />
+        </svg>
+      </div>
+
+      {/* Message */}
+      <div
+        className="text-center px-8"
+        style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease' }}
+      >
+        <p className="text-lg font-semibold text-gray-900 mb-1">{msg}</p>
+        <p className="text-sm text-gray-400 max-w-xs">{sub}</p>
+      </div>
+
+      {/* Step dots */}
+      <div className="flex gap-2 items-center">
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full bg-gray-900 transition-opacity duration-300"
+            style={{ opacity: i === (step % 3) ? 1 : 0.2 }}
+          />
+        ))}
+      </div>
+
+      <style>{`@keyframes spin { from { stroke-dashoffset: 0 } to { stroke-dashoffset: -176 } }`}</style>
+    </div>
+  )
+}
+
 function Tooltip({ type }) {
   const [open, setOpen] = useState(false)
   const info = tooltips[type]
@@ -47,9 +115,7 @@ function Tooltip({ type }) {
       </button>
       {open && (
         <>
-          {/* backdrop */}
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          {/* popup */}
           <div className="absolute left-6 top-0 z-20 w-72 bg-white border border-gray-200 rounded-xl shadow-lg p-4">
             <div className="flex items-start justify-between mb-2">
               <h4 className="font-semibold text-gray-900 text-sm">{info.title}</h4>
@@ -133,11 +199,12 @@ export default function Apply() {
       })
       navigate(`/result/${res.data.application_id}`)
     } catch (err) {
-      setError(err.response?.data?.detail || 'Something went wrong. Is the API running?')
-    } finally {
       setLoading(false)
+      setError(err.response?.data?.detail || 'Something went wrong. Is the API running?')
     }
   }
+
+  if (loading) return <LoadingScreen />
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
@@ -230,12 +297,7 @@ export default function Apply() {
 
         <button type="submit" disabled={loading}
           className="w-full py-4 text-base rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2">
-          {loading ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Analysing your application…
-            </>
-          ) : 'Submit Application'}
+          Submit Application
         </button>
 
       </form>
