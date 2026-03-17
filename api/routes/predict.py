@@ -37,9 +37,6 @@ def get_explainer():
 
 def build_inference_df(payload: LoanApplicationRequest) -> pd.DataFrame:
     emp_str = "< 1 year" if payload.emp_length == 0 else f"{payload.emp_length} years"
-    # Use median values for fields not collected in the application form
-    # addr_state defaults to CA (most common in training data)
-    # grade defaults to C (middle grade)
     raw = pd.DataFrame([{
         "loan_amnt": payload.loan_amnt, "term": f" {payload.term} months",
         "int_rate": 15.0, "installment": payload.loan_amnt / payload.term,
@@ -51,6 +48,72 @@ def build_inference_df(payload: LoanApplicationRequest) -> pd.DataFrame:
         "total_acc": 15, "mort_acc": 0, "pub_rec_bankruptcies": 0, "addr_state": "CA",
     }])
     return raw.fillna(0)
+
+def generate_email_with_gemini(
+    decision: str,
+    loan_amnt: float,
+    annual_inc: float,
+    dti: float,
+    fico: int,
+    purpose: str,
+    top_factors: list,
+) -> str:
+    try:
+        import google.generativeai as genai
+        from config.settings import settings
+
+        if not settings.gemini_api_key:
+            raise ValueError("GEMINI_API_KEY not set")
+
+        genai.configure(api_key=settings.gemini_api_key)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        factor_lines = "\n".join(
+            f"- {f['feature'].replace('_', ' ').title()}: "
+            f"{'helped' if f['direction'] == 'positive' else 'hurt'} your application "
+            f"(impact: {f['impact']:.3f})"
+            for f in top_factors[:3]
+        )
+
+        purpose_clean = purpose.replace("_", " ")
+        decision_word = "approved" if decision == "approved" else "unable to approve"
+
+        prompt = f"""You are a professional but friendly loan officer at ExplainMyDecision, a modern fintech company.
+
+Write a short, personalised decision letter for a loan application with these details:
+- Decision: {decision_word}
+- Loan amount: ${loan_amnt:,.0f}
+- Purpose: {purpose_clean}
+- Annual income: ${annual_inc:,.0f}
+- Debt-to-income ratio: {dti}%
+- FICO credit score: {fico}
+
+Top factors that influenced this decision:
+{factor_lines}
+
+Guidelines:
+- Be warm, professional, and human — not robotic
+- Keep it concise (3-4 short paragraphs)
+- Explain the key factors in plain English, not jargon
+- If approved, congratulate them briefly
+- If denied, be empathetic and mention they can improve their profile
+- End with "Best regards, The ExplainMyDecision Team"
+- Do NOT include a subject line or date
+- Start directly with "Dear Customer,"
+"""
+
+        response = model.generate_content(prompt)
+        return response.text.strip()
+
+    except Exception as e:
+        logger.error(f"Gemini email generation failed: {e}")
+        factor_names = ", ".join(f["feature"] for f in top_factors[:3])
+        return (
+            f"Dear Customer,\n\n"
+            f"Your loan application has been {decision}.\n\n"
+            f"Key factors: {factor_names}.\n\n"
+            f"Best regards,\nExplainMyDecision Team"
+        )
 
 @router.post("/predict", response_model=LoanDecisionResponse)
 async def predict_loan(
@@ -72,7 +135,6 @@ async def predict_loan(
         raw_df = build_inference_df(payload)
         preprocessor = get_preprocessor()
         X = preprocessor.transform(raw_df)
-        # Align columns to training schema — fill any missing dummies with 0
         import numpy as np
         if hasattr(preprocessor, 'feature_columns') and preprocessor.feature_columns:
             for col in preprocessor.feature_columns:
@@ -81,13 +143,23 @@ async def predict_loan(
             X = X[preprocessor.feature_columns]
         explainer = get_explainer()
         result = explainer.explain_prediction(X)
-        application.decision     = result["decision"]
-        application.probability  = result["probability"]
-        application.confidence   = result["confidence"]
-        application.shap_factors = result["top_factors"]
+        application.decision      = result["decision"]
+        application.probability   = result["probability"]
+        application.confidence    = result["confidence"]
+        application.shap_factors  = result["top_factors"]
         application.model_version = _model_version
         db.commit()
-        background_tasks.add_task(run_llm_pipeline, application.id, result["decision"], result["top_factors"])
+        background_tasks.add_task(
+            run_llm_pipeline,
+            application.id,
+            result["decision"],
+            result["top_factors"],
+            payload.loan_amnt,
+            payload.annual_inc,
+            payload.dti,
+            payload.fico_range_low,
+            payload.purpose.value,
+        )
         return LoanDecisionResponse(
             application_id=application.id, decision=result["decision"],
             probability=result["probability"], confidence=result["confidence"],
@@ -133,33 +205,55 @@ async def list_applications(
              "submitted_at": a.submitted_at.isoformat() if a.submitted_at else None,
              "status": a.status} for a in apps]
 
-async def run_llm_pipeline(application_id: int, decision: str, top_factors: list):
+async def run_llm_pipeline(
+    application_id: int,
+    decision: str,
+    top_factors: list,
+    loan_amnt: float,
+    annual_inc: float,
+    dti: float,
+    fico: int,
+    purpose: str,
+):
     from api.database import SessionLocal
     db = SessionLocal()
     try:
-        app = db.query(db_models.LoanApplication).filter(db_models.LoanApplication.id == application_id).first()
+        app = db.query(db_models.LoanApplication).filter(
+            db_models.LoanApplication.id == application_id
+        ).first()
         if not app:
             return
-        factor_names = ", ".join(f["feature"] for f in top_factors[:3])
-        app.explanation_email  = f"Dear Customer,\n\nYour loan application has been {decision}.\n\nKey factors: {factor_names}.\n\nBest regards,\nExplainMyDecision Team"
+
+        email = generate_email_with_gemini(
+            decision=decision,
+            loan_amnt=loan_amnt,
+            annual_inc=annual_inc,
+            dti=dti,
+            fico=fico,
+            purpose=purpose,
+            top_factors=top_factors,
+        )
+
         from recommender.engine import get_next_best_offers
         offers = get_next_best_offers(
-            profile  = {
+            profile={
                 "loan_amnt":      app.loan_amnt,
                 "dti":            app.dti,
                 "fico_range_low": app.fico_range_low,
                 "purpose":        app.purpose,
                 "annual_inc":     app.annual_inc,
             },
-            decision = decision,
+            decision=decision,
         )
+
+        app.explanation_email  = email
         app.guardrail_passed   = True
         app.escalated_to_human = False
         app.next_best_offers   = offers
         app.status             = "complete"
         app.processed_at       = datetime.now(timezone.utc)
         db.commit()
-        logger.info(f"Application {application_id} complete")
+        logger.info(f"Application {application_id} complete with Gemini email")
     except Exception as e:
         logger.error(f"LLM pipeline failed: {e}")
     finally:
