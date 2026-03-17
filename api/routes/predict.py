@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from loguru import logger
 import pandas as pd
 import joblib
+import time
 from pathlib import Path
 from api.database import get_db
 from api import models as db_models
@@ -104,14 +105,22 @@ Guidelines:
             f"gemini-2.0-flash:generateContent?key={settings.gemini_api_key}"
         )
 
-        response = httpx.post(
-            url,
-            json={"contents": [{"parts": [{"text": prompt}]}]},
-            timeout=30.0,
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        for attempt in range(3):
+            try:
+                response = httpx.post(
+                    url,
+                    json={"contents": [{"parts": [{"text": prompt}]}]},
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 429 and attempt < 2:
+                    logger.warning(f"Gemini rate limited, retrying in 10s (attempt {attempt + 1}/3)")
+                    time.sleep(10)
+                    continue
+                raise
 
     except Exception as e:
         logger.error(f"Gemini email generation failed: {e}")
