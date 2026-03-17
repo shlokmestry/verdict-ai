@@ -1,7 +1,17 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8007'
 
 export default function Layout() {
   const { pathname } = useLocation()
+  const [apiStatus, setApiStatus] = useState('checking') // 'online' | 'offline' | 'checking'
+
+  useEffect(() => {
+    fetch(`${API}/health`)
+      .then(res => res.ok ? setApiStatus('online') : setApiStatus('offline'))
+      .catch(() => setApiStatus('offline'))
+  }, [])
 
   const navLinks = [
     { to: '/',        label: 'Home'    },
@@ -9,9 +19,14 @@ export default function Layout() {
     { to: '/history', label: 'History' },
   ]
 
+  const statusDot = {
+    online:   { color: 'bg-success',   label: 'API Online'   },
+    offline:  { color: 'bg-destructive', label: 'API Offline' },
+    checking: { color: 'bg-gray-300',  label: 'Checking…'    },
+  }[apiStatus]
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Navbar */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="font-semibold text-gray-900 text-base tracking-tight">
@@ -40,14 +55,13 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-gray-100 py-12 mt-20">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-gray-400">
           <p>© 2026 explainmydecision</p>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-success rounded-full" />
-              <span>API Online</span>
+              <div className={`w-2 h-2 rounded-full ${statusDot.color} ${apiStatus === 'checking' ? 'animate-pulse' : ''}`} />
+              <span>{statusDot.label}</span>
             </div>
             <a href="https://github.com/shlokmestry/explainmydecision"
               target="_blank" rel="noopener noreferrer"
