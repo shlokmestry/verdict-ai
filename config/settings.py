@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     log_level:           str = "INFO"
     clerk_frontend_api:  str = ""
     clerk_secret_key:    str = ""
-    gemini_api_key: str = "AIzaSyDB1H_PAOvuhslRYRDw8F4se0BIglZ4MlM"
+    gemini_api_key: str = ""
 
     class Config:
         env_file = ".env"
