@@ -15,7 +15,7 @@ export default function Layout() {
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="font-semibold text-gray-900 text-base tracking-tight">
-            explainmy<span className="text-brand-600">decision</span>
+            <span className="text-brand-600">Verdict</span>
           </Link>
           <nav className="flex items-center gap-1">
             {navLinks.map(({ to, label }) => {
@@ -42,7 +42,7 @@ export default function Layout() {
 
       <footer className="border-t border-gray-100 py-8 mt-20">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-gray-400">
-          <p>© 2026 Verdict</p>
+          <p>© 2026 explainmydecision</p>
           <p className="text-xs text-gray-300">
             built with caffeine, gradient boosting, and a concerning number of git commits
           </p>
