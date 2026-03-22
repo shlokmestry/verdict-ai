@@ -20,7 +20,7 @@ sqlalchemy==2.0.31
 alembic==1.13.2
 psycopg2-binary==2.9.9
 # Monitoring
-mlflow==2.15.1
+mlflow==3.9.0rc0
 # Utils
 python-dotenv==1.0.1
 loguru==0.7.2
