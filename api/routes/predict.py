@@ -50,7 +50,7 @@ def build_inference_df(payload: LoanApplicationRequest) -> pd.DataFrame:
     }])
     return raw.fillna(0)
 
-def generate_email_with_gemini(
+def generate_decision_email(
     decision: str,
     loan_amnt: float,
     annual_inc: float,
@@ -63,8 +63,8 @@ def generate_email_with_gemini(
         import httpx
         from config.settings import settings
 
-        if not settings.gemini_api_key:
-            raise ValueError("GEMINI_API_KEY not set")
+        if not settings.groq_api_key:
+            raise ValueError("GROQ_API_KEY not set")
 
         factor_lines = "\n".join(
             f"- {f['feature'].replace('_', ' ').title()}: "
@@ -100,30 +100,28 @@ Guidelines:
 - Start directly with "Dear Customer,"
 """
 
-        url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
-            f"gemini-2.0-flash:generateContent?key={settings.gemini_api_key}"
+        response = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.groq_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "llama3-8b-8192",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 500,
+                "temperature": 0.7,
+            },
+            timeout=30.0,
         )
-
-        for attempt in range(3):
-            try:
-                response = httpx.post(
-                    url,
-                    json={"contents": [{"parts": [{"text": prompt}]}]},
-                    timeout=30.0,
-                )
-                response.raise_for_status()
-                data = response.json()
-                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code == 429 and attempt < 2:
-                    logger.warning(f"Gemini rate limited, retrying in 10s (attempt {attempt + 1}/3)")
-                    time.sleep(10)
-                    continue
-                raise
+        response.raise_for_status()
+        data = response.json()
+        email = data["choices"][0]["message"]["content"].strip()
+        logger.info("Groq email generated successfully")
+        return email
 
     except Exception as e:
-        logger.error(f"Gemini email generation failed: {e}")
+        logger.error(f"Groq email generation failed: {e}")
         factor_names = ", ".join(f["feature"] for f in top_factors[:3])
         return (
             f"Dear Customer,\n\n"
@@ -241,7 +239,7 @@ async def run_llm_pipeline(
         if not app:
             return
 
-        email = generate_email_with_gemini(
+        email = generate_decision_email(
             decision=decision,
             loan_amnt=loan_amnt,
             annual_inc=annual_inc,
@@ -270,7 +268,7 @@ async def run_llm_pipeline(
         app.status             = "complete"
         app.processed_at       = datetime.now(timezone.utc)
         db.commit()
-        logger.info(f"Application {application_id} complete with Gemini email")
+        logger.info(f"Application {application_id} complete with Groq email")
     except Exception as e:
         logger.error(f"LLM pipeline failed: {e}")
     finally:
