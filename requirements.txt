@@ -28,4 +28,5 @@ mlflow==2.15.1
 # Utils
 python-dotenv==1.0.1
 loguru==0.7.2
-pytest==8.3.2psycopg2-binary==2.9.9
+pytest==8.3.2
+psycopg2-binary==2.9.9
