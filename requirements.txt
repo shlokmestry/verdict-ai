@@ -7,7 +7,6 @@ lightgbm==4.4.0
 imbalanced-learn==0.12.3
 joblib==1.4.2
 shap==0.45.1
-
 # API
 fastapi==0.112.0
 uvicorn==0.30.5
@@ -16,17 +15,13 @@ pydantic-settings==2.4.0
 python-jose==3.3.0
 httpx==0.27.0
 PyJWT==2.9.0
-
 # Database
 sqlalchemy==2.0.31
 alembic==1.13.2
 psycopg2-binary==2.9.9
-
 # Monitoring
 mlflow==2.15.1
-
 # Utils
 python-dotenv==1.0.1
 loguru==0.7.2
 pytest==8.3.2
-psycopg2-binary==2.9.9

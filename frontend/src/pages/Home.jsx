@@ -23,7 +23,6 @@ const ease = [0.16, 1, 0.3, 1]
 
 function AnimatedCount({ target }) {
   const [count, setCount] = useState(0)
-
   useEffect(() => {
     if (!target) return
     const duration = 1000
@@ -36,13 +35,11 @@ function AnimatedCount({ target }) {
     }
     requestAnimationFrame(raf)
   }, [target])
-
   return <span>{count.toLocaleString()}</span>
 }
 
 function LiveCounter() {
   const [stats, setStats] = useState(null)
-
   useEffect(() => {
     axios.get(`${API}/api/applications`, {
       headers: { Authorization: 'Bearer dev-token' },
@@ -51,40 +48,35 @@ function LiveCounter() {
         const apps = res.data.filter(a => a.status !== 'error')
         const total    = apps.length
         const approved = apps.filter(a => a.decision === 'approved').length
-        const denied   = apps.filter(a => a.decision === 'denied').length
         const rate     = total > 0 ? Math.round((approved / total) * 100) : 0
-        setStats({ total, approved, denied, rate })
+        setStats({ total, approved, rate })
       })
       .catch(() => {})
   }, [])
-
   if (!stats || stats.total === 0) return null
-
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }} transition={{ duration: 0.5, ease }}
       className="mb-32"
     >
-      <div className="border border-gray-100 rounded-2xl p-8 bg-gray-50">
-        <p className="text-xs font-mono uppercase tracking-wider text-gray-400 mb-6 text-center">
-          live stats
-        </p>
-        <div className="grid grid-cols-3 gap-6 text-center">
+      <div className="border border-gray-100 rounded-2xl p-6 md:p-8 bg-gray-50">
+        <p className="text-xs font-mono uppercase tracking-wider text-gray-400 mb-6 text-center">live stats</p>
+        <div className="grid grid-cols-3 gap-4 md:gap-6 text-center">
           <div>
-            <p className="text-3xl font-bold text-gray-900 tabular-nums">
+            <p className="text-2xl md:text-3xl font-bold text-gray-900 tabular-nums">
               <AnimatedCount target={stats.total} />
             </p>
             <p className="text-xs text-gray-400 mt-1">decisions made</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-emerald-600 tabular-nums">
+            <p className="text-2xl md:text-3xl font-bold text-emerald-600 tabular-nums">
               <AnimatedCount target={stats.rate} />%
             </p>
             <p className="text-xs text-gray-400 mt-1">approval rate</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-gray-900 tabular-nums">
+            <p className="text-2xl md:text-3xl font-bold text-gray-900 tabular-nums">
               <AnimatedCount target={stats.approved} />
             </p>
             <p className="text-xs text-gray-400 mt-1">approved</p>
@@ -97,35 +89,35 @@ function LiveCounter() {
 
 export default function Home() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-20">
+    <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20">
 
       {/* Hero */}
-      <section className="text-center mb-32">
+      <section className="text-center mb-24 md:mb-32">
         <motion.h1
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease }}
-          className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">
-          Loan decisions you can <br />
+          className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">
+          Loan decisions you can <br className="hidden md:block" />
           <span className="text-gray-400 italic">actually</span> understand.
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease }}
-          className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
+          className="text-lg md:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed px-2">
           Verdict uses interpretable ML to provide instant credit approvals with full factor transparency. No black boxes.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease }}
-          className="flex gap-4 justify-center">
+          className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
           <Link to="/apply"
-            className="px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors active:scale-[0.98]">
+            className="px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors active:scale-[0.98] text-center">
             Apply now
           </Link>
           <Link to="/history"
-            className="px-6 py-3 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors active:scale-[0.98]">
+            className="px-6 py-3 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors active:scale-[0.98] text-center">
             View history
           </Link>
         </motion.div>
@@ -135,7 +127,7 @@ export default function Home() {
       <LiveCounter />
 
       {/* Steps */}
-      <section className="grid md:grid-cols-3 gap-12 mb-32">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-24 md:mb-32">
         {steps.map((s, i) => (
           <motion.div key={i}
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
@@ -152,12 +144,12 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="grid md:grid-cols-2 gap-6 mb-20">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-20">
         {features.map(({ Icon, title, desc, color }, i) => (
           <motion.div key={i}
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ delay: i * 0.05, duration: 0.5, ease }}
-            className="p-8 border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            className="p-6 md:p-8 border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
             <Icon className={`${color} mb-4`} size={28} />
             <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
             <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>

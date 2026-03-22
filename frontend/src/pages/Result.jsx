@@ -53,18 +53,13 @@ function ConfidenceArc({ value }) {
   return (
     <div className="flex flex-col items-center gap-1">
       <svg width={size} height={size * 0.6} viewBox={`0 0 ${size} ${size * 0.6}`}>
-        <path
-          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-          fill="none" stroke="#e5e7eb" strokeWidth="10" strokeLinecap="round"
-        />
-        <path
-          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+        <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none" stroke="#e5e7eb" strokeWidth="10" strokeLinecap="round" />
+        <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
           fill="none"
           stroke={value >= 70 ? '#10b981' : value >= 50 ? '#f59e0b' : '#ef4444'}
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          strokeWidth="10" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset}
           style={{ transition: 'stroke-dashoffset 0.05s linear' }}
         />
       </svg>
@@ -78,11 +73,10 @@ function FactorBar({ feature, impact, direction }) {
   const pct = Math.min(Math.round(impact * 500), 100)
   const pos = direction === 'positive'
   const label = friendlyLabel(feature)
-
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+    <div className="flex items-center gap-2 md:gap-3 py-2.5 border-b border-gray-50 last:border-0">
       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${pos ? 'bg-emerald-500' : 'bg-red-400'}`} />
-      <span className="text-xs text-gray-600 w-44 flex-shrink-0 truncate font-medium">{label}</span>
+      <span className="text-xs text-gray-600 w-32 md:w-44 flex-shrink-0 truncate font-medium">{label}</span>
       <div className="flex-1 bg-gray-100 rounded-full h-1.5">
         <motion.div
           initial={{ width: 0 }}
@@ -91,7 +85,7 @@ function FactorBar({ feature, impact, direction }) {
           className={`h-1.5 rounded-full ${pos ? 'bg-emerald-500' : 'bg-red-400'}`}
         />
       </div>
-      <span className={`text-xs font-semibold w-14 text-right tabular-nums font-mono ${pos ? 'text-emerald-600' : 'text-red-500'}`}>
+      <span className={`text-xs font-semibold w-12 md:w-14 text-right tabular-nums font-mono ${pos ? 'text-emerald-600' : 'text-red-500'}`}>
         {pos ? '+' : '−'}{impact.toFixed(3)}
       </span>
     </div>
@@ -100,22 +94,17 @@ function FactorBar({ feature, impact, direction }) {
 
 function ShareButton() {
   const [copied, setCopied] = useState(false)
-
   const handleCopy = () => {
     navigator.clipboard.writeText(window.location.href)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
-
   return (
-    <button
-      onClick={handleCopy}
-      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors px-3 py-1.5 border border-gray-200 rounded-lg"
-    >
+    <button onClick={handleCopy}
+      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors px-3 py-1.5 border border-gray-200 rounded-lg">
       {copied
         ? <><Check size={12} className="text-emerald-500" /> Copied!</>
-        : <><Copy size={12} /> Share result</>
-      }
+        : <><Copy size={12} /> Share result</>}
     </button>
   )
 }
@@ -134,11 +123,11 @@ function fireConfetti() {
 }
 
 export default function Result() {
-  const { id }                  = useParams()
-  const [data, setData]         = useState(null)
-  const [loading, setLoading]   = useState(true)
-  const [polls, setPolls]       = useState(0)
-  const confettiFired           = useRef(false)
+  const { id }                = useParams()
+  const [data, setData]       = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [polls, setPolls]     = useState(0)
+  const confettiFired         = useRef(false)
 
   useEffect(() => {
     axios.get(`${API}/api/applications/${id}`, {
@@ -168,7 +157,7 @@ export default function Result() {
   }, [data])
 
   if (!data && loading) return (
-    <div className="max-w-2xl mx-auto px-6 py-28 text-center">
+    <div className="max-w-2xl mx-auto px-4 py-28 text-center">
       <div className="w-10 h-10 border-4 border-gray-100 border-t-gray-900 rounded-full animate-spin mx-auto mb-5" />
       <p className="text-gray-500 font-medium">Analysing your application…</p>
       <p className="text-gray-400 text-sm mt-1">This usually takes a few seconds</p>
@@ -176,7 +165,7 @@ export default function Result() {
   )
 
   if (!data) return (
-    <div className="max-w-2xl mx-auto px-6 py-28 text-center">
+    <div className="max-w-2xl mx-auto px-4 py-28 text-center">
       <p className="text-gray-500 mb-4">Application not found.</p>
       <Link to="/apply" className="text-brand-600 font-medium text-sm hover:underline">Apply again →</Link>
     </div>
@@ -185,26 +174,22 @@ export default function Result() {
   const approved = data.decision === 'approved'
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-12 space-y-5">
+    <div className="max-w-2xl mx-auto px-4 md:px-6 py-8 md:py-12 space-y-5">
 
       {/* Decision banner */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className={`rounded-xl p-8 text-center border ${approved ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
-
+        className={`rounded-xl p-6 md:p-8 text-center border ${approved ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
         {approved
           ? <CheckCircle2 className="text-emerald-500 mx-auto mb-4" size={48} />
-          : <XCircle className="text-red-400 mx-auto mb-4" size={48} />
-        }
-
-        <h1 className={`text-3xl font-bold mb-6 ${approved ? 'text-emerald-700' : 'text-red-700'}`}>
+          : <XCircle className="text-red-400 mx-auto mb-4" size={48} />}
+        <h1 className={`text-2xl md:text-3xl font-bold mb-6 ${approved ? 'text-emerald-700' : 'text-red-700'}`}>
           {approved ? 'Approved' : 'Application Denied'}
         </h1>
-
-        <div className="flex items-center justify-center gap-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
           <ConfidenceArc value={Math.round(data.confidence * 100)} />
-          <div className="text-left">
+          <div className="text-center sm:text-left">
             <p className="text-xs text-gray-400 mb-1 font-mono">approval probability</p>
             <p className="text-2xl font-bold text-gray-900 tabular-nums font-mono">
               {(data.probability * 100).toFixed(1)}%
@@ -212,7 +197,6 @@ export default function Result() {
             <p className="text-xs text-gray-400 mt-3 font-mono">application #{id}</p>
           </div>
         </div>
-
         <div className="flex justify-center mt-5">
           <ShareButton />
         </div>
@@ -230,7 +214,7 @@ export default function Result() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 md:p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-semibold text-gray-900">What drove this decision</h2>
             <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded font-mono">SHAP values</span>
@@ -248,9 +232,9 @@ export default function Result() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 md:p-6">
           <h2 className="font-semibold text-gray-900 mb-4">Decision Letter</h2>
-          <div className="bg-gray-50 rounded-lg p-5 border border-gray-100">
+          <div className="bg-gray-50 rounded-lg p-4 md:p-5 border border-gray-100">
             <pre className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed font-sans">
               {data.explanation_email}
             </pre>
@@ -263,12 +247,12 @@ export default function Result() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 md:p-6">
           <h2 className="font-semibold text-gray-900 mb-1">Recommended next steps</h2>
           <p className="text-sm text-gray-400 mb-5">Based on your financial profile:</p>
           <div className="space-y-3">
             {data.next_best_offers.map((offer, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+              <div key={i} className="flex items-start gap-3 md:gap-4 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                 <div className="w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0 text-white font-mono font-bold text-xs">
                   {i + 1}
                 </div>

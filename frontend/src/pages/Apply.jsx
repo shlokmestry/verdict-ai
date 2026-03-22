@@ -30,7 +30,7 @@ const tooltips = {
   },
   fico: {
     title: 'FICO Credit Score',
-    body: 'A number between 300–850 that represents your creditworthiness. It\'s calculated from your payment history, amounts owed, length of credit history, and more. Scores above 670 are considered good. You can find yours on Credit Karma or your bank app.',
+    body: "A number between 300–850 that represents your creditworthiness. It's calculated from your payment history, amounts owed, length of credit history, and more. Scores above 670 are considered good. You can find yours on Credit Karma or your bank app.",
   },
 }
 
@@ -48,16 +48,10 @@ function CurrencyToggle({ currency, onChange }) {
   return (
     <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
       {['USD', 'EUR'].map(c => (
-        <button
-          key={c}
-          type="button"
-          onClick={() => onChange(c)}
+        <button key={c} type="button" onClick={() => onChange(c)}
           className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-            currency === c
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-400 hover:text-gray-600'
-          }`}
-        >
+            currency === c ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+          }`}>
           {c === 'USD' ? '$ USD' : '€ EUR'}
         </button>
       ))}
@@ -77,10 +71,7 @@ function ProgressBar({ step }) {
         ))}
       </div>
       <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className="h-1 bg-gray-900 rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-1 bg-gray-900 rounded-full transition-all duration-500 ease-out" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
@@ -91,25 +82,17 @@ function LoanSummary({ form, currency, symbol, toUSD }) {
   const usdAmount  = toUSD(rawAmount)
   const term       = Number(form.term)
   const income     = Number(form.annual_inc)
-  const usdIncome  = toUSD(income)
   const hasAmount  = rawAmount >= 1000
   const hasTerm    = term > 0
-
-  const monthlyPayment = hasAmount && hasTerm
-    ? (rawAmount / term).toFixed(0)
-    : null
-
-  const affordability = monthlyPayment && income > 0
-    ? ((Number(monthlyPayment) / (income / 12)) * 100).toFixed(0)
-    : null
-
+  const monthlyPayment = hasAmount && hasTerm ? (rawAmount / term).toFixed(0) : null
+  const affordability  = monthlyPayment && income > 0
+    ? ((Number(monthlyPayment) / (income / 12)) * 100).toFixed(0) : null
   const purposeLabel = purposes.find(p => p.value === form.purpose)?.label
   const empty = !hasAmount && !hasTerm && !form.purpose
 
   return (
     <div className="sticky top-24 bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
       <p className="text-xs font-mono uppercase tracking-wider text-gray-400 mb-4">Live summary</p>
-
       {empty ? (
         <p className="text-sm text-gray-300 italic">Fill in the form to see your summary</p>
       ) : (
@@ -117,29 +100,24 @@ function LoanSummary({ form, currency, symbol, toUSD }) {
           {hasAmount && (
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Loan amount</p>
-              <p className="text-2xl font-bold text-gray-900 tabular-nums">
-                {symbol}{rawAmount.toLocaleString()}
-              </p>
+              <p className="text-2xl font-bold text-gray-900 tabular-nums">{symbol}{rawAmount.toLocaleString()}</p>
               {currency === 'EUR' && (
                 <p className="text-xs text-gray-300 mt-0.5">≈ ${Math.round(usdAmount).toLocaleString()} USD</p>
               )}
             </div>
           )}
-
           {hasTerm && (
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Term</p>
               <p className="text-sm font-medium text-gray-700">{term} months</p>
             </div>
           )}
-
           {purposeLabel && (
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Purpose</p>
               <p className="text-sm font-medium text-gray-700">{purposeLabel}</p>
             </div>
           )}
-
           {monthlyPayment && (
             <div className="pt-3 border-t border-gray-50">
               <p className="text-xs text-gray-400 mb-0.5">Est. monthly payment</p>
@@ -150,7 +128,6 @@ function LoanSummary({ form, currency, symbol, toUSD }) {
               <p className="text-xs text-gray-300 mt-0.5">principal only, excl. interest</p>
             </div>
           )}
-
           {affordability && (
             <div>
               <p className="text-xs text-gray-400 mb-1">Payment-to-income</p>
@@ -180,22 +157,16 @@ function LoanSummary({ form, currency, symbol, toUSD }) {
 function LoadingScreen() {
   const [step, setStep]       = useState(0)
   const [visible, setVisible] = useState(true)
-
   useEffect(() => {
     const t = setInterval(() => {
       setVisible(false)
-      setTimeout(() => {
-        setStep(s => s + 1)
-        setVisible(true)
-      }, 300)
+      setTimeout(() => { setStep(s => s + 1); setVisible(true) }, 300)
     }, 2500)
     return () => clearInterval(t)
   }, [])
-
   const { msg, sub } = loadingMessages[step % loadingMessages.length]
-
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center gap-6">
+    <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center gap-6 px-6">
       <div className="relative w-16 h-16">
         <svg viewBox="0 0 64 64" className="w-16 h-16" style={{ transform: 'rotate(-90deg)' }}>
           <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="3" />
@@ -204,7 +175,7 @@ function LoadingScreen() {
             style={{ animation: 'spin 1.2s linear infinite' }} />
         </svg>
       </div>
-      <div className="text-center px-8" style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease' }}>
+      <div className="text-center" style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease' }}>
         <p className="text-lg font-semibold text-gray-900 mb-1">{msg}</p>
         <p className="text-sm text-gray-400 max-w-xs">{sub}</p>
       </div>
@@ -231,7 +202,7 @@ function Tooltip({ type }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-6 top-0 z-20 w-72 bg-white border border-gray-200 rounded-xl shadow-lg p-4">
+          <div className="absolute left-6 top-0 z-20 w-64 md:w-72 bg-white border border-gray-200 rounded-xl shadow-lg p-4">
             <div className="flex items-start justify-between mb-2">
               <h4 className="font-semibold text-gray-900 text-sm">{info.title}</h4>
               <button type="button" onClick={() => setOpen(false)}
@@ -278,28 +249,21 @@ function getStep(form) {
 }
 
 export default function Apply() {
-  const navigate               = useNavigate()
-  const [loading, setLoading]  = useState(false)
-  const [error, setError]      = useState(null)
+  const navigate                = useNavigate()
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState(null)
   const [currency, setCurrency] = useState('USD')
   const [form, setForm] = useState({
-    loan_amnt:      '',
-    term:           '',
-    purpose:        '',
-    annual_inc:     '',
-    dti:            '',
-    fico_range_low: '',
-    home_ownership: '',
-    emp_length:     '',
+    loan_amnt: '', term: '', purpose: '', annual_inc: '',
+    dti: '', fico_range_low: '', home_ownership: '', emp_length: '',
   })
 
   const isEUR  = currency === 'EUR'
   const symbol = isEUR ? '€' : '$'
   const toUSD  = (val) => isEUR ? val * EUR_TO_USD : val
-
-  const maxLoan     = isEUR ? Math.round(40000 / EUR_TO_USD) : 40000
-  const minLoan     = isEUR ? Math.round(1000  / EUR_TO_USD) : 1000
-  const loanHint    = isEUR
+  const maxLoan  = isEUR ? Math.round(40000 / EUR_TO_USD) : 40000
+  const minLoan  = isEUR ? Math.round(1000  / EUR_TO_USD) : 1000
+  const loanHint = isEUR
     ? `Between €${minLoan.toLocaleString()} and €${maxLoan.toLocaleString()} (≈ $1,000–$40,000)`
     : 'Between $1,000 and $40,000'
 
@@ -356,10 +320,11 @@ export default function Apply() {
   const step = getStep(form)
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
-      <div className="flex items-start justify-between mb-2">
+    <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Loan Application</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Loan Application</h1>
           <p className="text-gray-500 mt-2 text-sm">Fill in your details and get an instant AI-powered decision.</p>
         </div>
         <CurrencyToggle currency={currency} onChange={handleCurrencyChange} />
@@ -370,9 +335,8 @@ export default function Apply() {
       </div>
 
       <div className="flex gap-10">
-        {/* Form */}
+        {/* Form — full width on mobile */}
         <form onSubmit={handleSubmit} className="flex-1 space-y-12 min-w-0">
-
           <section>
             <SectionHeader label="Loan Details" />
             <div className="grid gap-6">
@@ -385,7 +349,6 @@ export default function Apply() {
                     className={inputCls + " pl-8"} />
                 </div>
               </Field>
-
               <Field label="Term">
                 <select name="term" value={form.term} onChange={handleChange} required
                   className={inputCls + " appearance-none " + (!form.term ? 'text-gray-400' : 'text-gray-900')}>
@@ -394,7 +357,6 @@ export default function Apply() {
                   <option value={60}>60 months</option>
                 </select>
               </Field>
-
               <Field label="Purpose">
                 <select name="purpose" value={form.purpose} onChange={handleChange} required
                   className={inputCls + " appearance-none " + (!form.purpose ? 'text-gray-400' : 'text-gray-900')}>
@@ -417,7 +379,6 @@ export default function Apply() {
                     className={inputCls + " pl-8"} />
                 </div>
               </Field>
-
               <Field label="Debt-to-Income Ratio" hint="As a percentage of your monthly income" tooltip="dti">
                 <div className="relative">
                   <input type="number" name="dti" value={form.dti}
@@ -426,19 +387,16 @@ export default function Apply() {
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
                 </div>
               </Field>
-
               <Field label="FICO Credit Score" hint="Between 580 and 850" tooltip="fico">
                 <input type="number" name="fico_range_low" value={form.fico_range_low}
                   onChange={handleChange} min={580} max={850} required
                   placeholder="e.g. 700" className={inputCls} />
               </Field>
-
               <Field label="Employment Length" hint="Years at current or most recent employer (0–10)">
                 <input type="number" name="emp_length" value={form.emp_length}
                   onChange={handleChange} min={0} max={10} required
                   placeholder="e.g. 3" className={inputCls} />
               </Field>
-
               <Field label="Home Ownership">
                 <select name="home_ownership" value={form.home_ownership} onChange={handleChange} required
                   className={inputCls + " appearance-none " + (!form.home_ownership ? 'text-gray-400' : 'text-gray-900')}>
@@ -461,7 +419,7 @@ export default function Apply() {
           </button>
         </form>
 
-        {/* Sidebar */}
+        {/* Sidebar — only on large screens */}
         <div className="w-56 flex-shrink-0 hidden lg:block">
           <LoanSummary form={form} currency={currency} symbol={symbol} toUSD={toUSD} />
         </div>
