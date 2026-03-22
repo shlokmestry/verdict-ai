@@ -113,7 +113,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease }}
           className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          ExplainMyDecision uses interpretable ML to provide instant credit approvals with full factor transparency. No black boxes.
+          Verdict uses interpretable ML to provide instant credit approvals with full factor transparency. No black boxes.
         </motion.p>
 
         <motion.div

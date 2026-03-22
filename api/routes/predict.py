@@ -76,7 +76,7 @@ def generate_decision_email(
         purpose_clean = purpose.replace("_", " ")
         decision_word = "approved" if decision == "approved" else "unable to approve"
 
-        prompt = f"""You are a professional but friendly loan officer at ExplainMyDecision, a modern fintech company.
+        prompt = f"""You are a professional but friendly loan officer at Verdict, a modern fintech company.
 
 Write a short, personalised decision letter for a loan application with these details:
 - Decision: {decision_word}
@@ -95,7 +95,7 @@ Guidelines:
 - Explain the key factors in plain English, not jargon
 - If approved, congratulate them briefly
 - If denied, be empathetic and mention they can improve their profile
-- End with "Best regards, The ExplainMyDecision Team"
+- End with "Best regards, The Verdict Team"
 - Do NOT include a subject line or date
 - Start directly with "Dear Customer,"
 """
@@ -127,7 +127,7 @@ Guidelines:
             f"Dear Customer,\n\n"
             f"Your loan application has been {decision}.\n\n"
             f"Key factors: {factor_names}.\n\n"
-            f"Best regards,\nExplainMyDecision Team"
+            f"Best regards,\nVerdict Team"
         )
 
 @router.post("/predict", response_model=LoanDecisionResponse)

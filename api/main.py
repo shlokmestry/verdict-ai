@@ -7,7 +7,7 @@ from config.settings import settings
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="ExplainMyDecision API", version="1.0.0", docs_url="/docs")
+app = FastAPI(title="Verdict API", version="1.0.0", docs_url="/docs")
 
 app.add_middleware(
     CORSMiddleware,

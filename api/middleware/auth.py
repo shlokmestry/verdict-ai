@@ -12,7 +12,7 @@ security = HTTPBearer()
 def verify_token(token: str) -> dict:
     if not settings.clerk_frontend_api:
         logger.warning("CLERK_FRONTEND_API not set - using dev auth bypass")
-        return {"sub": "dev_user_001", "email": "dev@explainmydecision.com", "name": "Dev User"}
+        return {"sub": "dev_user_001", "email": "dev@Verdict.com", "name": "Dev User"}
     try:
         payload = jwt.decode(token, options={"verify_signature": False}, algorithms=["RS256"])
         return payload
