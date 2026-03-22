@@ -16,11 +16,11 @@ const stack = [
 const faqs = [
   {
     q: 'Is this a real bank?',
-    a: 'No — Verdict is a portfolio project demonstrating how interpretable ML can be applied to credit decisions. No real loans are issued.',
+    a: 'No - ExplainMyDecision is a portfolio project demonstrating how interpretable ML can be applied to credit decisions. No real loans are issued.',
   },
   {
     q: 'What data does the model use?',
-    a: 'The model was trained on publicly available LendingClub loan data. It uses financial features like DTI, FICO score, income, employment length, and loan purpose — no demographic data.',
+    a: 'The model was trained on publicly available LendingClub loan data. It uses financial features like DTI, FICO score, income, employment length, and loan purpose no demographic data.',
   },
   {
     q: 'What is a SHAP value?',
@@ -28,11 +28,11 @@ const faqs = [
   },
   {
     q: 'Why is confidence sometimes low?',
-    a: 'Confidence reflects how certain the model is about its decision. A 55% confidence approval means the application is borderline — the features are close to the decision boundary.',
+    a: 'Confidence reflects how certain the model is about its decision. A 55% confidence approval means the application is borderline the features are close to the decision boundary.',
   },
   {
     q: 'Which model is running?',
-    a: 'The best-performing model is selected automatically after training based on ROC AUC on the validation set. You can see which model is active on the /health endpoint.',
+    a: 'The best performing model is selected automatically after training based on ROC AUC on the validation set. You can see which model is active on the /health endpoint.',
   },
 ]
 
@@ -50,7 +50,7 @@ export default function About() {
           How it works
         </h1>
         <p className="text-lg text-gray-500 max-w-2xl leading-relaxed">
-          Verdict is an end-to-end AI loan approval system built to demonstrate
+          ExplainMyDecision is an end-to-end AI loan approval system built to demonstrate
           how machine learning can make credit decisions that are fast, fair, and fully explainable.
         </p>
       </motion.div>
@@ -128,7 +128,7 @@ export default function About() {
             className="px-6 py-3 rounded-lg bg-gray-900 text-white font-medium text-sm hover:bg-gray-800 transition-colors">
             Apply now
           </Link>
-          <a href="https://github.com/shlokmestry/Verdict"
+          <a href="https://github.com/shlokmestry/explainmydecision"
             target="_blank" rel="noopener noreferrer"
             className="px-6 py-3 rounded-lg border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors">
             View on GitHub ↗

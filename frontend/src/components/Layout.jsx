@@ -41,10 +41,10 @@ export default function Layout() {
       </main>
 
       <footer className="border-t border-gray-100 py-8 mt-20">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-gray-400">
-          <p>© 2026 explainmydecision</p>
-          <p className="text-xs text-gray-300">
-            built with caffeine, gradient boosting, and a concerning number of git commits
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm bg-gray-900">
+          <p>© 2026 Verdict</p>
+          <p className="text-xs bg-gray-900">
+            built with caffeine, gradient boosting, and a concerning number of git commits.
           </p>
         </div>
       </footer>
