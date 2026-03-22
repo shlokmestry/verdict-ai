@@ -16,7 +16,7 @@ const stack = [
 const faqs = [
   {
     q: 'Is this a real bank?',
-    a: 'No - ExplainMyDecision is a portfolio project demonstrating how interpretable ML can be applied to credit decisions. No real loans are issued.',
+    a: 'No - Verdict is a portfolio project demonstrating how interpretable ML can be applied to credit decisions. No real loans are issued.',
   },
   {
     q: 'What data does the model use?',
@@ -50,7 +50,7 @@ export default function About() {
           How it works
         </h1>
         <p className="text-lg text-gray-500 max-w-2xl leading-relaxed">
-          ExplainMyDecision is an end-to-end AI loan approval system built to demonstrate
+          Verdict is an end-to-end AI loan approval system built to demonstrate
           how machine learning can make credit decisions that are fast, fair, and fully explainable.
         </p>
       </motion.div>
@@ -128,7 +128,7 @@ export default function About() {
             className="px-6 py-3 rounded-lg bg-gray-900 text-white font-medium text-sm hover:bg-gray-800 transition-colors">
             Apply now
           </Link>
-          <a href="https://github.com/shlokmestry/explainmydecision"
+          <a href="https://github.com/shlokmestry/Verdict"
             target="_blank" rel="noopener noreferrer"
             className="px-6 py-3 rounded-lg border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors">
             View on GitHub ↗
